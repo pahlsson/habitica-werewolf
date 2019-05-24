@@ -37,7 +37,7 @@ function werewolf() {
     var userData = JSON.parse(UrlFetchApp.fetch("https://habitica.com/api/v3/user", params));
     Utilities.sleep(3000);
     
-    if(userData.data.items.gear.owned.head_mystery_201502 && userData.data.items.gear.owned.armor_mystery_201509) {
+    if(userData.data.items.gear.owned.head_mystery_201509 && userData.data.items.gear.owned.armor_mystery_201509) {
       params.method = "post";
       
       // Equip werewolf mask, if not already wearing it
