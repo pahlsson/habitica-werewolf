@@ -1,9 +1,3 @@
-/*
-Here a bunch of full moon dates for testing purposes
-"2019-06-17", "2019-07-16", "2019-08-15", "2019-09-14", "2019-10-13", "2019-11-12", "2019-12-12", "2020-01-10", "2020-02-09", "2020-03-09",
-"2020-04-08", "2020-05-07", "2020-06-05", "2020-07-05", "2020-08-03", "2020-09-02", "2020-10-01", "2020-10-31", "2020-11-30", "2020-12-30"
-*/
-
 function werewolf() {
   var habId = "";
   var habToken = "";
@@ -17,26 +11,12 @@ function werewolf() {
     }
   }
   
-  // First we need today's date
-  var today = new Date();
-  var year = today.getYear();
-  var month = today.getMonth();
-  var date = today.getDate();
-  
-  // The formatting of the date for the API call we're going to make differs from the response, and we need both...
-  var askDate = month + 1 + "/" + date + "/" + year;
-  var replyDate = year + " " + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month] + " " + date;
-  
-  // Now fetch the current moon phase from the good folks at the U.S. Naval Observatory
-  var moonPhase = JSON.parse(UrlFetchApp.fetch("https://api.usno.navy.mil/moon/phase?date=" + askDate + "&nump=1"));
-  
-  // Check if today is full moon
-  if(moonPhase.phasedata[0].phase == "Full Moon" && moonPhase.phasedata[0].date == replyDate) {
- 
-    // Fetch the user's data and check if user owns werewolf outfit. If so, equip it!
+  if(isMoonFull()) {
+    // Fetch the user's data
     var userData = JSON.parse(UrlFetchApp.fetch("https://habitica.com/api/v3/user", params));
     Utilities.sleep(3000);
     
+    // Check if user owns werewolf outfit. If so, equip it!
     if(userData.data.items.gear.owned.head_mystery_201509 && userData.data.items.gear.owned.armor_mystery_201509) {
       params.method = "post";
       
@@ -78,5 +58,38 @@ function werewolf() {
         Utilities.sleep(3000);
       }  
     } // End equippery 
+  }
+}
+
+// Fetch the current moon phase from the good folks at the U.S. Naval Observatory, or calc it ourselves
+function isMoonFull() {
+  // First we need today's date
+  var today = new Date();
+  var year = today.getYear();
+  var month = today.getMonth();
+  var date = today.getDate();
+
+  // The formatting of the date for the API call we're going to make differs from the response, and we need both...
+  var askDate = month + 1 + "/" + date + "/" + year;  
+
+  if(date < 10)
+    date = "0" + date; // replydate date has two digits!
+
+  var replyDate = year + " " + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month] + " " + date;
+
+  // Now here comes trouble. The API sometimes throws a DNS error, so we need a back-up method to calc moon phase. Problem is, it is not 100% accurate... OH WELL.
+  try {
+    var moonPhase = JSON.parse(UrlFetchApp.fetch("https://api.usno.navy.mil/moon/phase?date=" + askDate + "&nump=1"));
+    return moonPhase.phasedata[0].phase == "Full Moon" && moonPhase.phasedata[0].date == replyDate ? true : false;
+  }
+  catch(e) {
+    // This method is accurate to -1/+1 day, as far as I can tell.
+    // Totally ripped off from http://www.ben-daglish.net/moon.shtml (R.I.P. dude)
+    var lp = 2551443; 
+	  var now = new Date(year, month - 1, date, 20, 35, 0);						
+	  var new_moon = new Date(1970, 0, 7, 20, 35, 0);
+	  var phase = ((now.getTime() - new_moon.getTime()) / 1000) % lp;
+	  var x = Math.floor(phase / (24 * 3600)) + 1;
+    return x == 15 ? true : false;
   }
 }
