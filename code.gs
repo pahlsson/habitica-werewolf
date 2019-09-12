@@ -85,11 +85,11 @@ function isMoonFull() {
   catch(e) {
     // This method is accurate to -1/+1 day, as far as I can tell.
     // Totally ripped off from http://www.ben-daglish.net/moon.shtml (R.I.P. dude)
-    var lp = 2551443; 
-	  var now = new Date(year, month - 1, date, 20, 35, 0);						
-	  var new_moon = new Date(1970, 0, 7, 20, 35, 0);
-	  var phase = ((now.getTime() - new_moon.getTime()) / 1000) % lp;
-	  var x = Math.floor(phase / (24 * 3600)) + 1;
+    var lp = 2551443;
+    var now = new Date(year, month - 1, date, 20, 35, 0);
+    var new_moon = new Date(1970, 0, 7, 20, 35, 0);
+    var phase = ((now.getTime() - new_moon.getTime()) / 1000) % lp;
+    var x = Math.floor(phase / (24 * 3600)) + 1;
     return x == 15 ? true : false;
   }
 }
